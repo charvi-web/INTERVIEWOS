@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import authRoutes from "./routes/authRoutes.js"; // ← add karo
 
 const app = express();
 
@@ -17,6 +18,9 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(cookieParser());
+
+// routes
+app.use("/api/auth", authRoutes); // ← add karo
 
 //test route
 app.get("/",(req,res)=>{
