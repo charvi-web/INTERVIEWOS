@@ -5,6 +5,11 @@ import Interview from "../models/Interview.js";
 import Session from "../models/Session.js";
 
 // CREATE INTERVIEW
+// User naya interview create karta hai
+// req.body se data aata hai — title, company, type etc
+// req.user._id — verifyJWT middleware ne attach kiya tha
+// createdBy mein logged in user ki ID save hoti hai
+// Taaki baad mein sirf uske interviews fetch kar sakein
 export const createInterview = asyncHandler(async (req, res) => {
   const { title, company, type, difficulty, role } = req.body;
 
@@ -27,6 +32,10 @@ export const createInterview = asyncHandler(async (req, res) => {
 });
 
 // GET ALL INTERVIEWS OF LOGGED IN USER
+// Sirf logged in user ke interviews fetch karo
+// createdBy: req.user._id — filter lagaya
+// sort({createdAt: -1}) — latest pehle aayega
+// -1 matlab descending order
 export const getMyInterviews = asyncHandler(async (req, res) => {
   const interviews = await Interview.find({ createdBy: req.user._id })
     .sort({ createdAt: -1 }); // latest pehle
@@ -37,6 +46,12 @@ export const getMyInterviews = asyncHandler(async (req, res) => {
 });
 
 // GET SINGLE INTERVIEW
+// :id se ek specific interview dhundo
+// 2 checks:
+// 1. Interview exist karta hai?
+// 2. Ye interview is user ka hai? (dusra user na dekh sake)
+// interview.createdBy.toString() !== req.user._id.toString()
+// toString() isliye kyunki MongoDB ObjectId aur string compare nahi hote directly
 export const getInterviewById = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -57,6 +72,12 @@ export const getInterviewById = asyncHandler(async (req, res) => {
 });
 
 // UPDATE INTERVIEW
+// $set — MongoDB operator
+// Sirf jo fields bheje hain unhe update karo
+// Baaki same rehta hai
+// title: title || interview.title
+// matlab — agar naya title bheja toh update karo
+// warna purana wala rakho
 export const updateInterview = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { title, company, type, difficulty, role, status, score, feedback } =
@@ -118,10 +139,12 @@ export const deleteInterview = asyncHandler(async (req, res) => {
 });
 
 // GET DASHBOARD STATS
+// Ye function charts ke liye data deta hai
 export const getDashboardStats = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
   // total interviews
+  // countDocuments — kitne documents hain count karo
   const totalInterviews = await Interview.countDocuments({
     createdBy: userId,
   });
@@ -131,10 +154,12 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
     createdBy: userId,
     status: "completed",
   });
-
+// sirf completed interviews count
+// aggregate — MongoDB ka powerful feature--pipelines ke liye hota h
+// Multiple operations ek saath karo
   // average score
   const scoreData = await Interview.aggregate([
-    {
+    {// $match — filter karo (WHERE clause jaisa SQL mein)
       $match: {
         createdBy: userId,
         status: "completed",
@@ -154,11 +179,13 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
     { $match: { createdBy: userId } },
     {
       $group: {
-        _id: "$difficulty",
-        count: { $sum: 1 },
+        _id: "$difficulty",  // difficulty ke basis pe group karo
+        count: { $sum: 1 }   // har group mein kitne hain count karo
       },
     },
   ]);
+// Result: [{_id: "easy", count: 3}, {_id: "hard", count: 5}]
+// Ye data pie chart mein jayega frontend pe
 
   // interviews by type
   const byType = await Interview.aggregate([
@@ -179,6 +206,8 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
         createdAt: {
           $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
         },
+    // $gte — greater than or equal
+    // last 7 din ka data
       },
     },
     {
@@ -186,11 +215,14 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
         _id: {
           $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
         },
+        // date ko string mein convert karo — "2026-06-21"
         count: { $sum: 1 },
       },
     },
     { $sort: { _id: 1 } },
   ]);
+// Result: [{_id: "2026-06-15", count: 2}, {_id: "2026-06-16", count: 1}]
+// Ye data line chart mein jayega — activity graph
 
   return res.status(200).json(
     new ApiResponse(
