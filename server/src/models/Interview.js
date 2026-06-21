@@ -1,0 +1,54 @@
+import mongoose from "mongoose"
+const interviewSchema = new mongoose.Schema(
+    {
+        title:{
+            type:String,
+            required:true,
+        },
+        company:
+        {
+            type:String,
+            default:"",
+        },
+        type:{
+            type:String,
+            enum:["technical","behavioral","resume","coding","mixed"],
+            default:"technical",
+        },
+        difficulty:{
+            type:String,
+            enum:["easy","medium","hard"],
+            default:"medium",
+        },
+        role:{
+            type:String,
+            enum:["frontend","backend","fullstack","sde","devops","other"],
+            default:"sde",
+        },
+        status:{
+            type:String,
+            enum:["pending","ongoing","completed"],
+            default:"pending"
+        },
+        createdBy:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"User",
+            required:true,
+        },
+        session:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Session",
+        },
+        score:{
+            type:Number,
+            default:0,
+        },
+        feedback:{
+            type:String,
+            default:"",
+        },
+    },{
+        timestamps:true,
+    }
+);
+export default mongoose.model("Interview",interviewSchema);
