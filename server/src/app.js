@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes.js"; // ← add karo
 import interviewRoutes from "./routes/interviewRoutes.js";
+import aiRoutes from "./routes/aiRoutes.js";
 const app = express();
 
 //middlewares
@@ -22,6 +23,7 @@ app.use(cookieParser());
 // routes
 app.use("/api/auth", authRoutes); // ← add karo
 app.use("/api/interviews", interviewRoutes);
+app.use("/api/ai",aiRoutes);
 //test route
 app.get("/",(req,res)=>{
     res.json(
