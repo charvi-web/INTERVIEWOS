@@ -15,7 +15,7 @@ const generateTokens = async (userId) => {
     const accessToken = jwt.sign(
       { id: user._id },  //payload - user ki identity 
       process.env.ACCESS_TOKEN_SECRET, // secret key -- sirf server jaanta h
-      { expiresIn: "15m" } // 15 min baad expire
+      { expiresIn: "1h" } // 1 hr baad expire
     );
     //REFRESH TOKEN -- long lived(7 din)
     //sirf naya access token lene ke liye use hota h 

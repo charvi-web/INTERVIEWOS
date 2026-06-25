@@ -1,39 +1,50 @@
 import multer from "multer";
 
 
-const storage = multer.diskStorage({
+// store file temporarily in RAM buffer
+// because we directly send it to Cloudinary
 
-    destination:function(req,file,cb){
-        cb(null,"uploads/")
-    },
+const storage = multer.memoryStorage();
 
-    filename:function(req,file,cb){
-
-        cb(
-          null,
-          Date.now()+"-"+file.originalname
-        )
-
-    }
-
-})
 
 
 export const upload = multer({
+
     storage,
 
-    fileFilter:(req,file,cb)=>{
 
-        if(file.mimetype==="application/pdf"){
-            cb(null,true)
-        }
-        else{
+    limits: {
+
+        // 5 MB max resume size
+
+        fileSize: 5 * 1024 * 1024
+
+    },
+
+
+    fileFilter: (req, file, cb) => {
+
+
+        // only PDF allowed
+
+        if(file.mimetype === "application/pdf") {
+
+
+            cb(null, true);
+
+
+        } else {
+
+
             cb(
-              new Error("Only PDF allowed"),
-              false
-            )
+                new Error("Only PDF files are allowed"),
+                false
+            );
+
+
         }
 
     }
 
-})
+
+});
