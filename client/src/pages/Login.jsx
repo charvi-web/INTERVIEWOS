@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Eye, EyeOff, Zap, Brain, Code2, Trophy } from 'lucide-react'
 import axios from 'axios'
 import toast from 'react-hot-toast'
+import api from '../utils/api.js'
 
 const Login = () => {
   const navigate = useNavigate()
@@ -20,36 +21,30 @@ const Login = () => {
   })
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    // e.preventDefault — page refresh rokta hai
-    setLoading(true)
+  e.preventDefault()
+  setLoading(true)
 
-    try {
-      const url = isLogin 
-        ? 'http://localhost:5000/api/auth/login'
-        : 'http://localhost:5000/api/auth/signup'
+  try {
+    const url = isLogin ? '/auth/login' : '/auth/signup'
+    // ab sirf path likhna hai — baseURL automatically lagega
 
-      const payload = isLogin 
-        ? { email: formData.email, password: formData.password }
-        : formData
+    const payload = isLogin
+      ? { email: formData.email, password: formData.password }
+      : formData
 
-      const { data } = await axios.post(url, payload)
-      // axios.post — POST request bhejo
-      // data — response ka data
+    const { data } = await api.post(url, payload)
 
-      // Token save karo localStorage mein
-      localStorage.setItem('accessToken', data.data.accessToken)
-      localStorage.setItem('user', JSON.stringify(data.data.user))
+    localStorage.setItem('accessToken', data.data.accessToken)
+    localStorage.setItem('user', JSON.stringify(data.data.user))
+    toast.success(isLogin ? 'Welcome back! 🎉' : 'Account created! 🚀')
+    navigate('/dashboard')
 
-      toast.success(isLogin ? 'Welcome back! 🎉' : 'Account created! 🚀')
-      navigate('/dashboard')
-
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Something went wrong')
-    } finally {
-      setLoading(false)
-    }
+  } catch (error) {
+    toast.error(error.response?.data?.message || 'Something went wrong')
+  } finally {
+    setLoading(false)
   }
+}
 
   // Features list — left side pe dikhega
   const features = [
